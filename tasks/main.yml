@@ -1,0 +1,34 @@
+---
+
+- name:           "main | Find the latest release"
+  get_url:
+    url:          "https://api.github.com/repos/{{ github_private_release_owner }}/{{ github_private_release_repo }}/releases/latest"
+    headers:      "Authorization: token {{ github_private_release_auth_token }},Accept: application/vnd.github.v3+json"
+    dest:         "{{ github_private_release_output }}"
+    force:        "yes"
+    mode:         0755
+  changed_when:   False
+
+- name:           "main | Store information about release in a string"
+  command:        "cat {{ github_private_release_output }}"
+  register:       output
+  no_log:         True
+  changed_when:   False
+
+- name:           "main | Load information about release from string"
+  set_fact:
+    asset_info:   "{{ output.stdout|from_json() }}"
+  no_log:         True
+
+- name:           "main | Download release deb package"
+  get_url:
+    url:          "{{ asset_info['assets'][0]['url'] }}?access_token={{ github_private_release_auth_token }}"
+    headers:      "Accept: application/octet-stream"
+    dest:         "{{ github_private_release_tmpdir }}/{{ asset_info['assets'][0]['name'] }}"
+    force:        "yes"
+
+- name:           "main | Install deb package"
+  apt:
+    deb:          "{{ github_private_release_tmpdir }}/{{ asset_info['assets'][0]['name'] }}"
+  become:         yes
+  become_method:  sudo

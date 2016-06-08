@@ -1,0 +1,6 @@
+---
+github_private_release_owner:       "octocat"
+github_private_release_repo:        "Hello-World"
+github_private_release_output:      "{{ github_private_release_tmpdir }}/{{ github_private_release_owner }}-{{ github_private_release_repo }}-release.json"
+github_private_release_auth_token:  ""
+github_private_release_tmpdir:      "{{ ansible_env.HOME }}"
